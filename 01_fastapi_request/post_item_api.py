@@ -1,6 +1,8 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi import Body
 from pydantic import BaseModel
+from typing import Union
 
 app = FastAPI()
 
@@ -10,6 +12,11 @@ class Item(BaseModel):
     description: str | None = None
     price: float
     tax: float | None = None
+
+
+class User(BaseModel):
+    username: str
+    full_name: Union[str, None] = None
 
 
 # create new item
@@ -23,7 +30,8 @@ async def creat_item(item: Item):
     return {"data": item_dict}
 
 
-@app.put("/items/{item_id}")
+# update origin item
+@app.put("/item/{item_id}")
 async def update_item(item_id: int, item: Item, q: str | None = None):
     result = {"item_id": item_id, **item.model_dump()}
     if q:
@@ -31,6 +39,13 @@ async def update_item(item_id: int, item: Item, q: str | None = None):
     return result
 
 
+# multi item body data
+@app.put("/item/user/{item_id}")
+async def update_item_with_user(item_id: int, item: Item, user: User, importance: int = Body()):
+    results = {"item_id": item_id, "item": item, "user": user, "importance": importance}
+    return results
+
+
 # app run as debug
 if __name__ == "__main__":
-    uvicorn.run("post_item_api:app", port=8000, reload=True)
+    uvicorn.run("post_item_api:app", port=8001, reload=True)
