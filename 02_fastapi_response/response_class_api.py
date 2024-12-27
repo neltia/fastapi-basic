@@ -10,6 +10,7 @@ FastAPI Response Class
 import uvicorn
 from datetime import datetime
 from typing import Union
+import os
 
 from fastapi import FastAPI
 from fastapi import Response
@@ -104,21 +105,30 @@ async def get_redirect():
 # - media-type를 지정해 응답 미디어 타입 지정 가능
 @app.get("/file/download")
 async def get_file():
-    file_path = "json_response.py"
+    file_path = "dummy_data.txt"
+    make_file(file_path=file_path)
     return FileResponse(file_path, media_type="text/plain", filename="download.txt")
+
+
+def make_file(file_path):
+    if os.path.exists(file_path):
+        return
+    text = "is dummy data"
+    with open(file_path, 'w') as f:
+        f.write(text)
 
 
 # streaming response
 # - 스트리밍 방식 데이터 응답, 대량 데이터를 청크 단위로 로드
 # - 실시간 데이터 스트리밍, 대규모 파일 전송, 비디오/오디오 스트리밍 시 사용
-async def fake_video_streamer():
-    for i in range(10):
-        yield f"Frame {i}\n"
-
-
 @app.get("/stream", response_class=StreamingResponse)
 async def stream():
     return StreamingResponse(fake_video_streamer(), media_type="text/plain")
+
+
+async def fake_video_streamer():
+    for i in range(10):
+        yield f"Frame {i}\n"
 
 
 # app run as debug
