@@ -1,3 +1,6 @@
-# FastAPI-Guide
-Python FastAPI Tutorial를 기반으로 하는 FastAPI 가이드
+# FastAPI-Basic
+Python FastAPI Tutorial 참조 FastAPI 기본 내용 실습
 - https://fastapi.tiangolo.com/tutorial
+
+## ENV
+- python 3.10+

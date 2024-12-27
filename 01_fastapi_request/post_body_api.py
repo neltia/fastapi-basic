@@ -6,6 +6,7 @@ from typing import Annotated, List
 
 app = FastAPI()
 
+
 class FormData(BaseModel):
     username: str
     password: str
