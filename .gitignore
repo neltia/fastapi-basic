@@ -1,7 +1,12 @@
 __pycache__
 
 .env
-*.db
 
 *.txt
 !requirements.txt
+
+*.db
+*.json
+
+tests/
+.pytest_cache
