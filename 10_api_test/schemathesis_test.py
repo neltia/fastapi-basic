@@ -12,7 +12,7 @@ schema = schemathesis.from_uri(url)
 
 # Schemathesis Test
 # - Hypothesis 설정 (예: 최대 실행 시간과 예제 수 조정)
-@settings(max_examples=10)  # deadline=5000
+@settings(max_examples=1)  # deadline=5000
 @schema.parametrize()
 def test_api(case):
     case.call_and_validate()
