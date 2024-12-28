@@ -15,6 +15,7 @@ def save_openapi_spec(api_url: str, output_file: str):
 
         # Parse JSON response using orjson
         spec_data = response.json()
+        spec_data["openapi"] = "3.0.2"
 
         # Save to file with orjson
         with open(output_file, "wb") as f:

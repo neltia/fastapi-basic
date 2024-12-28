@@ -9,6 +9,7 @@ from app_mariadb.routes import mariadb_router
 load_dotenv()
 
 app = FastAPI(title="Database CRUD API", version="1.0")
+app.openapi_version = "3.0.2"
 
 # Custom Error handler
 app.add_exception_handler(HTTPException, http_exception_handler)

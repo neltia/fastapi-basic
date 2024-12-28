@@ -11,6 +11,7 @@ from sqlite_user.service import UserService
 
 app = FastAPI()
 
+
 # Secret key for session
 SECRET_KEY = "your_secret_key"
 # 세션 미들웨어 추가

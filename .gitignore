@@ -1,7 +1,8 @@
 __pycache__
+venv/
+.hypothesis
 
 .env
-venv/
 
 *.txt
 !requirements.txt
