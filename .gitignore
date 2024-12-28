@@ -1,12 +1,14 @@
 __pycache__
 
 .env
+venv/
 
 *.txt
 !requirements.txt
 
 *.db
 *.json
+*.bat
 
 tests/
 .pytest_cache
