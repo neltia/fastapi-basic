@@ -2,8 +2,7 @@ from pydantic import BaseModel
 from pydantic import StrictInt, ValidationError
 from pydantic import Field
 from pydantic import field_validator
-
-from fastapi import FastAPI, Query, Path, Form
+from fastapi import FastAPI, Query, Path
 
 
 app = FastAPI()
@@ -42,7 +41,7 @@ class Event(BaseModel):
 # In FastAPI, Path & Query 파라미터 검증
 @app.get("/items/{item_id}")
 async def read_item(
-    item_id: int = Path(..., ge=1, le=1000),  # Path 파라미터 범위 검증
+    item_id: int = Path(..., ge=1, le=1000),  # Path 파라미터 범위 검증, ...은 필수 값 명시
     q: str = Query(None, min_length=3, max_length=50)  # Query 파라미터 길이 제한
 ):
     return {"item_id": item_id, "q": q}
