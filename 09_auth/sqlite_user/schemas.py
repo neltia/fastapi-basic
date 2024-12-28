@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from pydantic import ConfigDict
 
 
 class UserBase(BaseModel):
@@ -17,5 +18,4 @@ class PasswordUpdate(BaseModel):
 class UserResponse(UserBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
