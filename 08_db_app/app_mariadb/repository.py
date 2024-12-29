@@ -1,60 +1,61 @@
-from sqlalchemy import inspect
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.future import select
+from sqlalchemy import update, delete
 
-from common.get_conn import get_mariadb_engine
+from common.get_conn import get_mariadb_engine_async
 from app_mariadb.models import Base, Item
 
-engine = get_mariadb_engine()
+engine = get_mariadb_engine_async()
 
 
 class MariaDBRepository:
     def __init__(self):
         self.engine = engine
-        self.SessionLocal = sessionmaker(bind=self.engine)
-        self.initialize_database()
+        self.SessionLocal = async_sessionmaker(bind=self.engine, expire_on_commit=False)
+        self.initialize_database()  # In Production, not recommend. change it: @router.on_event("startup")
 
-    def initialize_database(self):
+    async def initialize_database(self):
         """
-        Check if the 'items' table exists. If not, create it.
+        Initialize the database by creating tables if they do not exist.
         """
-        inspector = inspect(self.engine)
-        if 'items' not in inspector.get_table_names():
-            print("Table 'items' does not exist. Creating...")
-            Base.metadata.create_all(self.engine)
-            print("Table 'items' created successfully.")
+        async with self.engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+            print("Tables created successfully.")
 
-    def get_all(self):
-        session = self.SessionLocal()
-        return session.query(Item).all()
+    async def get_all(self):
+        async with self.SessionLocal() as session:
+            result = await session.execute(select(Item))
+            return result.scalars().all()
 
-    def create(self, item: dict):
-        with self.SessionLocal() as session:
+    async def create(self, item: dict):
+        async with self.SessionLocal() as session:
             new_item = Item(**item)
             session.add(new_item)
-            session.commit()
-            session.refresh(new_item)
+            await session.commit()
+            await session.refresh(new_item)
             return new_item
 
-    def get_by_id(self, item_id: int):
-        with self.SessionLocal() as session:
-            return session.query(Item).filter(Item.id == item_id).first()
+    async def get_by_id(self, item_id: int):
+        async with self.SessionLocal() as session:
+            result = await session.execute(select(Item).where(Item.id == item_id))
+            return result.scalar_one_or_none()
 
-    def update(self, item_id: int, updates: dict):
-        with self.SessionLocal() as session:
-            item = session.query(Item).filter(Item.id == item_id).first()
-            if not item:
-                return None
-            for key, value in updates.items():
-                setattr(item, key, value)
-            session.commit()
-            session.refresh(item)
-            return item
+    async def update(self, item_id: int, updates: dict):
+        async with self.SessionLocal() as session:
+            stmt = (
+                update(Item)
+                .where(Item.id == item_id)
+                .values(**updates)
+                .execution_options(synchronize_session="fetch")
+            )
+            _ = await session.execute(stmt)
+            await session.commit()
+            # Return the updated item
+            return await self.get_by_id(item_id)
 
-    def delete(self, item_id: int):
-        with self.SessionLocal() as session:
-            item = session.query(Item).filter(Item.id == item_id).first()
-            if item:
-                session.delete(item)
-                session.commit()
-                return True
-            return False
+    async def delete(self, item_id: int):
+        async with self.SessionLocal() as session:
+            stmt = delete(Item).where(Item.id == item_id)
+            result = await session.execute(stmt)
+            await session.commit()
+            return result.rowcount > 0

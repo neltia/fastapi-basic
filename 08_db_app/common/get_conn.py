@@ -3,6 +3,7 @@ import os
 
 from urllib.parse import quote
 from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 
 import redis
 from elasticsearch import Elasticsearch
@@ -16,7 +17,7 @@ def get_sqlite_engine(db_url: str = "sqlite:///db.sqlite3"):
 
 
 # MariaDB
-def get_mariadb_engine():
+def get_mariadb_engine_sync():
     user = os.getenv("MARIADB_USER", None)
     password = quote(os.getenv("MARIADB_PASSWORD", None))
     host = os.getenv("MARIADB_HOST", "localhost")
@@ -25,6 +26,17 @@ def get_mariadb_engine():
 
     db_url = f"mysql+pymysql://{user}:{password}@{host}:{port}/{database}"
     return create_engine(db_url)
+
+
+def get_mariadb_engine_async():
+    user = os.getenv("MARIADB_USER", None)
+    password = quote(os.getenv("MARIADB_PASSWORD", None))
+    host = os.getenv("MARIADB_HOST", "localhost")
+    port = os.getenv("MARIADB_PORT", 3307)
+    database = os.getenv("MARIADB_DATABASE", None)
+
+    db_url = f"mysql+asyncmy://{user}:{password}@{host}:{port}/{database}"
+    return create_async_engine(db_url)
 
 
 # Redis
