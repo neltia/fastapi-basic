@@ -1,12 +1,13 @@
+# env
 from dotenv import load_dotenv
 import os
-
 from urllib.parse import quote
+# RDB
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import create_async_engine
-
+# NoSQL
 import redis
-from elasticsearch import Elasticsearch
+from elasticsearch import AsyncElasticsearch
 
 load_dotenv()
 
@@ -46,8 +47,56 @@ def get_redis_client(host="localhost", port=6379, db=0):
 
 
 # Elasticsearch
-def get_elasticsearch_client(host="https://localhost:9200", maxsize=10):
-    return Elasticsearch(
-        hosts=[host],
-        maxsize=maxsize
+def get_elasticsearch_client():
+    es_host = os.getenv("ELASTICSEARCH_HOST", "localhost")
+    es_port = os.getenv("ELASTICSEARCH_PORT", 9200)
+    is_secure = os.getenv("ELASTICSEARCH_SECURE", "True").lower() == "true"
+
+    es_user = os.getenv("ELASTICSEARCH_USER", None)
+    es_password = os.getenv("ELASTICSEARCH_PASSWORD", None)
+    max_connection = int(os.getenv("ELASTICSEARCH_MAX_CONNECTIONS", 10))
+
+    if not es_host.startswith("http"):
+        host_list = get_host_list(es_host, es_port, is_secure=is_secure)
+    else:
+        host_list = es_host
+
+    es_client = AsyncElasticsearch(
+        hosts=host_list,
+        basic_auth=(es_user, es_password) if es_user and es_password else None,  # Basic Authentication
+        verify_certs=False,  # SSL/TLS 인증 무시 설정, Production에서는 사용 권장
+        ssl_show_warn=False,
+        # connections_per_node=max_connection
     )
+    return es_client
+
+
+def get_host_list(host_data, es_port, is_secure=True):
+    protocol = "https" if is_secure else "http"
+
+    host_list = list()
+    if "," not in host_data:
+        host_data = f"{protocol}://{host_data}:{es_port}"
+        host_list.append(host_data)
+        return host_list
+
+    for host in host_data.split(","):
+        host_data = f"{protocol}://{host}:{es_port}"
+        host_list.append(host_data)
+    return host_list
+
+
+async def test_elasticsearch_connection():
+    es_client = get_elasticsearch_client()
+    try:
+        if await es_client.ping():
+            print("Elasticsearch connection successful.")
+        else:
+            print("Elasticsearch connection failed.")
+    finally:
+        await es_client.close()
+
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(test_elasticsearch_connection())

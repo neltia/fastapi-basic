@@ -6,6 +6,7 @@ import logging
 
 from dotenv import load_dotenv
 from app_mariadb.routes import mariadb_router
+from app_elasticsearch.routes import es_router
 
 
 load_dotenv()
@@ -34,7 +35,8 @@ async def log_request_time(request: Request, call_next):
 
 
 # Include routers
-app.include_router(mariadb_router, prefix="/mariadb", tags=["MariaDB"])
+app.include_router(mariadb_router, prefix="/mariadb", tags=["MariaDB: Item"])
+app.include_router(es_router, prefix="/es", tags=["Elasticsearch: Product"])
 
 
 @app.get("/")
