@@ -3,7 +3,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 # JWT 설정
-SECRET_KEY = "your_secret_key"
+SECRET_KEY = "your_secret_key"  # In Production, environment variables recommend
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 7

@@ -7,7 +7,7 @@ JWT Request Flow
 5. logout
 """
 import uvicorn
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi import Security
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.security.api_key import APIKeyHeader
@@ -17,7 +17,7 @@ from sqlite_user.db import Base, engine, get_db
 from sqlite_user.service import UserService
 from sqlite_user.jwt_security import create_access_token, create_refresh_token, decode_token
 
-app = FastAPI()
+router = APIRouter(tags=["JWT Authentication"])
 
 # 데이터베이스 초기화
 Base.metadata.create_all(bind=engine)
@@ -47,13 +47,13 @@ def get_current_user(api_key: str = Security(api_key_header)):
 
 
 # 토큰 검증 절차를 거쳐 확인된 사용자 정보 반환
-@app.get("/users/me")
+@router.get("/users/me")
 def read_users_me(current_user: dict = Depends(get_current_user)):
     return current_user
 
 
 # access_token과 refresh_token 발급
-@app.post("/token")
+@router.post("/token")
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
 ):
@@ -71,7 +71,7 @@ def login(
 
 
 # 리프레시 토큰을 통해 새로운 access_token 발급
-@app.post("/refresh")
+@router.post("/refresh")
 def refresh_token(
     refresh_token: str, db: Session = Depends(get_db)
 ):
@@ -92,4 +92,4 @@ def refresh_token(
 
 
 if __name__ == "__main__":
-    uvicorn.run("jwt_auth_sqlite:app", reload=True, port=8001)
+    uvicorn.run("jwt_auth_sqlite:router", reload=True, port=8001)
