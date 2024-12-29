@@ -8,6 +8,9 @@ class MariaDBService:
     def __init__(self):
         self.repo = MariaDBRepository()
 
+    async def init_db(self):
+        await self.repo.initialize_database()
+
     async def get_all_items(self):
         items = await self.repo.get_all()
         data = [ItemResponse.model_validate(item) for item in items]

@@ -6,6 +6,12 @@ mariadb_router = APIRouter()
 service = MariaDBService()
 
 
+@mariadb_router.on_event("startup")
+async def startup_event():
+    await service.init_db()
+    print("Database initialization completed.")
+
+
 @mariadb_router.get("/items")
 async def get_items():
     return await service.get_all_items()

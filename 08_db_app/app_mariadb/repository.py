@@ -12,7 +12,7 @@ class MariaDBRepository:
     def __init__(self):
         self.engine = engine
         self.SessionLocal = async_sessionmaker(bind=self.engine, expire_on_commit=False)
-        self.initialize_database()  # In Production, not recommend. change it: @router.on_event("startup")
+        # self.initialize_database()  # In Production, not recommend. change it: @router.on_event("startup")
 
     async def initialize_database(self):
         """
