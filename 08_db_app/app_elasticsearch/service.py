@@ -1,7 +1,9 @@
 from dotenv import load_dotenv
 import os
 from fastapi import HTTPException
+from typing import Optional
 from common.get_conn import get_elasticsearch_client
+from app_elasticsearch.query_builder import QueryBuilder
 from app_elasticsearch.repository import ElasticsearchRepository
 from app_elasticsearch.models import ProductResponse, ProductCreate, ProductUpdate, ProductSearchQuery
 from common.result_helper import create_response
@@ -27,11 +29,19 @@ class ElasticsearchService:
 
     async def get_all_products(self):
         query = {"match_all": {}}
-        product_list = await self.repo.search_documents(query)
-        data = [ProductResponse.model_validate(product) for product in product_list]
+        response = await self.repo.search_documents(query)
+        product_list = response["hits"]["hits"]
+
+        data = list()
+        for product_data in product_list:
+            product = product_data["_source"]
+            product["id"] = product_data["_id"]
+            validated_data = ProductResponse.model_validate(product)
+            data.append(validated_data)
+
         return create_response(result_code=200, data=data)
 
-    async def create_product(self, doc_id: str, product: ProductCreate):
+    async def create_product(self, doc_id: Optional[str], product: ProductCreate):
         product_data = product.model_dump()
         response = await self.repo.create_document(doc_id=doc_id, document=product_data)
         if response["result"] != "created":
@@ -58,16 +68,24 @@ class ElasticsearchService:
         return create_response(result_code=200, data="Product deleted successfully")
 
     async def search(self, query: ProductSearchQuery):
-        query_dsl = {
-            "query": {
-                "bool": {
-                    "must": [{"match": {"name": query.query}}] if query.query else []
-                }
-            }
-        }
-
-        response = await self.repo.search_documents(query=query_dsl["query"])
+        search_query = QueryBuilder.build_search_query(
+            query=query.query,
+            filters=query.filters,
+            sort_by=query.sort_by,
+            order=query.order or "desc"
+        )
+        response = await self.repo.search_documents(query=search_query.to_dict()["query"])
         total = response["hits"]["total"]["value"]
-        product_list = [hit["_source"] for hit in response["hits"]["hits"]]
+        product_list = [
+            ProductResponse(
+                id=hit["_id"],
+                name=hit["_source"]["name"],
+                category=hit["_source"]["category"],
+                price=hit["_source"]["price"],
+                description=hit["_source"].get("description"),
+            )
+            for hit in response["hits"]["hits"]
+        ]
+
         data = {"total": total, "list": product_list}
         return create_response(result_code=200, data=data)

@@ -8,7 +8,10 @@ class ElasticsearchRepository:
 
     # Create or update a document in Elasticsearch
     async def create_document(self, doc_id: str, document: dict):
-        response = await self.es_client.index(index=self.index_name, id=doc_id, body=document)
+        if doc_id:
+            response = await self.es_client.index(index=self.index_name, id=doc_id, body=document)
+        else:
+            response = await self.es_client.index(index=self.index_name, body=document)
         return response
 
     # Retrieve a document by its ID

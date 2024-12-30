@@ -12,6 +12,7 @@ PyMySQL==1.1.1
 redis==5.2.1
 elasticsearch==8.17.0
 elastic-transport==8.15.1
+elasticsearch_dsl==8.17.0
 
 asyncmy==0.2.10
 aioelasticsearch==0.7.0

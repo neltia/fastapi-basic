@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from app_elasticsearch.service import get_es_client
 from app_elasticsearch.service import get_es_service
 from app_elasticsearch.models import ProductCreate, ProductUpdate, ProductSearchQuery
+from typing import Optional
 
 es_router = APIRouter()
 service = get_es_service()
@@ -19,7 +20,7 @@ async def get_all_products():
 
 
 @es_router.post("/products")
-async def add_products(doc_id: str, product: ProductCreate):
+async def add_products(product: ProductCreate, doc_id: Optional[str] = None):
     result = await service.create_product(doc_id, product)
     return result
 
