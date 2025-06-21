@@ -16,6 +16,7 @@ elasticsearch_dsl==8.17.0
 
 asyncmy==0.2.10
 aioelasticsearch==0.7.0
+aiomysql=0.2.0
 
 bcrypt==4.2.1
 python-jose==3.3.0
@@ -25,6 +26,8 @@ unkey.py==0.7.1
 
 twisted
 anyio
+pydantic==2.6.2
+pydantic-settings==2.7.0
 pytest
 pytest-asyncio
 pytest-tornasync==0.6.0.post2
