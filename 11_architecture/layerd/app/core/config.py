@@ -18,6 +18,11 @@ class Settings(PydanticSettings):
     app_version: str = Field("1.0.0", env="APP_VERSION")
     debug: bool = Field(False, env="DEBUG")
 
+    # Async/Sync Mode Configuration
+    async_mode: bool = Field(False, env="ASYNC_MODE")
+    database_pool_size: int = Field(5, env="DB_POOL_SIZE")
+    database_max_overflow: int = Field(10, env="DB_MAX_OVERFLOW")
+
     # Security
     secret_key: str = Field(..., env="SECRET_KEY")
 
@@ -44,9 +49,36 @@ class Settings(PydanticSettings):
 
         raise ValueError("Either DATABASE_URL or all individual DB components must be provided")
 
+    @property
+    def async_database_url(self) -> str:
+        """Get async version of database URL"""
+        return self.database_url.replace("mysql+pymysql://", "mysql+aiomysql://")
+
+    @property
+    def database_config(self) -> dict:
+        """Get database configuration for engine creation"""
+        return {
+            "echo": self.debug,
+            "pool_pre_ping": True,
+            "pool_recycle": 300,
+            "pool_size": self.database_pool_size,
+            "max_overflow": self.database_max_overflow
+        }
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+
+
+def get_mode_info() -> dict:
+    """Get current mode information"""
+    return {
+        "async_mode": settings.async_mode,
+        "database_url": settings.database_url,
+        "async_database_url": settings.async_database_url,
+        "pool_size": settings.database_pool_size,
+        "max_overflow": settings.database_max_overflow
+    }
 
 
 # Global settings instance

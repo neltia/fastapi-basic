@@ -1,7 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from sqlalchemy import text
 
 from app.core.config import settings
 from app.api.v1.routers import api_router
@@ -54,28 +53,7 @@ async def root():
     return {
         "message": f"Welcome to {settings.app_name}",
         "version": settings.app_version,
+        "async_enabled": settings.async_mode,
         "docs": "/docs",
         "redoc": "/redoc"
     }
-
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    try:
-        # Test database connection
-        from app.db.base import SessionLocal
-        db = SessionLocal()
-        db.execute(text("SELECT 1"))
-        db.close()
-
-        return {
-            "status": "healthy",
-            "database": "connected",
-            "version": settings.app_version
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=503,
-            detail=f"Service unavailable: {str(e)}"
-        )
