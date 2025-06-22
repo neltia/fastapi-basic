@@ -10,6 +10,7 @@ venv/
 *.db
 *.json
 *.bat
+*.zip
 
 tests/
 .pytest_cache

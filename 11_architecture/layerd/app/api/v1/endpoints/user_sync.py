@@ -1,6 +1,5 @@
 # app/api/v1/endpoints/user_sync.py
 from fastapi import APIRouter, Query, status
-from fastapi import Depends
 from typing import Optional
 
 from app.api.v1.dependencies import UserServiceDep

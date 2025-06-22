@@ -3,8 +3,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 
-print(settings.database_url)
-
 # Create database engine
 engine = create_engine(
     settings.database_url,
